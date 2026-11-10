@@ -1,0 +1,339 @@
+
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#171923">
+<title>Smart Reminder</title>
+
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+Bengali:wght@400;500;600;700;800&display=swap');
+
+:root {
+  --bg: #171923;
+  --card: #222634;
+  --gold: #d9b46b;
+  --text: #f6f3ed;
+  --muted: #a5a9b5;
+  --border: #353b4b;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Noto Sans Bengali', sans-serif;
+  min-height: 100vh;
+}
+
+.container {
+  max-width: 600px;
+  margin: auto;
+  padding: 20px 16px 100px;
+}
+
+header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 25px;
+}
+
+.logo {
+  font-size: 23px;
+  font-weight: 800;
+  color: var(--gold);
+}
+
+.subtitle {
+  color: var(--muted);
+  font-size: 12px;
+  margin-top: 4px;
+}
+
+.profile {
+  width: 43px;
+  height: 43px;
+  border-radius: 14px;
+  background: #393346;
+  display: grid;
+  place-items: center;
+  font-size: 21px;
+}
+
+.clock-card {
+  background: linear-gradient(135deg,#383044,#252938);
+  border: 1px solid #51435a;
+  border-radius: 22px;
+  padding: 24px;
+  margin-bottom: 25px;
+}
+
+.clock-label {
+  color: #d1c2a6;
+  font-size: 13px;
+}
+
+.clock {
+  font-size: 42px;
+  font-weight: 800;
+  margin: 8px 0;
+  color: white;
+}
+
+.date {
+  color: #c5bdc9;
+  font-size: 13px;
+}
+
+.section-title {
+  font-size: 18px;
+  font-weight: 700;
+  margin: 24px 0 14px;
+}
+
+.add-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  padding: 19px;
+}
+
+label {
+  display: block;
+  font-size: 13px;
+  color: var(--muted);
+  margin-bottom: 8px;
+}
+
+input, textarea {
+  width: 100%;
+  background: #171b27;
+  color: white;
+  border: 1px solid var(--border);
+  border-radius: 11px;
+  padding: 13px;
+  font-family: inherit;
+  font-size: 14px;
+  outline: none;
+  margin-bottom: 16px;
+}
+
+input:focus, textarea:focus {
+  border-color: var(--gold);
+}
+
+textarea {
+  resize: vertical;
+  min-height: 65px;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+select {
+  width: 100%;
+  background: #171b27;
+  color: white;
+  border: 1px solid var(--border);
+  border-radius: 11px;
+  padding: 13px;
+  font-family: inherit;
+  margin-bottom: 16px;
+}
+
+.add-btn {
+  width: 100%;
+  background: linear-gradient(135deg,#e3c27e,#b18a4b);
+  color: #211b15;
+  border: none;
+  border-radius: 12px;
+  padding: 15px;
+  font-family: inherit;
+  font-weight: 800;
+  font-size: 15px;
+  cursor: pointer;
+}
+
+.add-btn:active {
+  transform: scale(.98);
+}
+
+.reminder {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 15px;
+  padding: 16px;
+  margin-bottom: 12px;
+  display: flex;
+  align-items: center;
+  gap: 13px;
+}
+
+.reminder-icon {
+  width: 45px;
+  height: 45px;
+  border-radius: 13px;
+  background: #393346;
+  display: grid;
+  place-items: center;
+  font-size: 20px;
+}
+
+.reminder-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.reminder-name {
+  font-size: 14px;
+  font-weight: 700;
+  overflow-wrap: anywhere;
+}
+
+.reminder-time {
+  color: var(--muted);
+  font-size: 11px;
+  margin-top: 5px;
+}
+
+.delete {
+  border: none;
+  background: #493039;
+  color: #ffb7b7;
+  border-radius: 9px;
+  padding: 9px;
+  cursor: pointer;
+}
+
+.empty {
+  text-align: center;
+  padding: 28px 10px;
+  color: var(--muted);
+  font-size: 13px;
+}
+
+footer {
+  text-align: center;
+  color: #747b8b;
+  font-size: 11px;
+  margin-top: 35px;
+}
+
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+<header>
+  <div>
+    <div class="logo">Smart Reminder</div>
+    <div class="subtitle">আপনার প্রতিদিনের কাজের সঙ্গী</div>
+  </div>
+  <div class="profile">⏰</div>
+</header>
+
+<section class="clock-card">
+  <div class="clock-label">বর্তমান সময়</div>
+  <div class="clock" id="clock">00:00:00</div>
+  <div class="date" id="today"></div>
+</section>
+
+<div class="section-title">নতুন রিমাইন্ডার</div>
+
+<section class="add-card">
+
+  <label>কাজের নাম</label>
+  <input id="task" type="text"
+         placeholder="কী মনে রাখতে চান?">
+
+  <label>বিস্তারিত (ঐচ্ছিক)</label>
+  <textarea id="details"
+            placeholder="কাজ সম্পর্কে কিছু লিখুন..."></textarea>
+
+  <div class="grid">
+    <div>
+      <label>তারিখ</label>
+      <input id="date" type="date">
+    </div>
+
+    <div>
+      <label>সময়</label>
+      <input id="time" type="time">
+    </div>
+  </div>
+
+  <label>পুনরাবৃত্তি</label>
+  <select id="repeat">
+    <option value="none">একবার</option>
+    <option value="daily">প্রতিদিন</option>
+    <option value="weekly">প্রতি সপ্তাহে</option>
+    <option value="monthly">প্রতি মাসে</option>
+  </select>
+
+  <button class="add-btn" onclick="addReminder()">
+    ＋ রিমাইন্ডার সংরক্ষণ করুন
+  </button>
+
+</section>
+
+<div class="section-title">আমার রিমাইন্ডার</div>
+
+<div id="reminders">
+  <div class="empty">এখনো কোনো রিমাইন্ডার যোগ করা হয়নি।</div>
+</div>
+
+<footer>
+  Smart Reminder · আপনার সময়, আপনার নিয়ন্ত্রণ
+</footer>
+
+</div>
+
+<script>
+function updateClock() {
+  const now = new Date();
+
+  document.getElementById('clock').textContent =
+    now.toLocaleTimeString('bn-BD', {
+      hour12: true
+    });
+
+  document.getElementById('today').textContent =
+    now.toLocaleDateString('bn-BD', {
+      weekday: 'long',
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric'
+    });
+}
+
+updateClock();
+setInterval(updateClock, 1000);
+
+function addReminder() {
+  const task = document.getElementById('task').value.trim();
+  const date = document.getElementById('date').value;
+  const time = document.getElementById('time').value;
+
+  if (!task || !date || !time) {
+    alert('কাজের নাম, তারিখ ও সময় পূরণ করুন।');
+    return;
+  }
+
+  alert('ইন্টারফেস প্রস্তুত। Android অ্যালার্ম সংযোগ পরবর্তী ধাপে যুক্ত হবে।');
+}
+</script>
+
+</body>
+</html>
