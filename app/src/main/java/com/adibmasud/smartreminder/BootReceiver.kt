@@ -1,3 +1,4 @@
+
 package com.adibmasud.smartreminder
 
 import android.app.AlarmManager
@@ -23,25 +24,34 @@ class BootReceiver : BroadcastReceiver() {
         )
 
         val reminders = try {
-            JSONArray(prefs.getString("reminders", "[]"))
-        } catch (e: Exception) {
+            JSONArray(
+                prefs.getString("reminders", "[]")
+            )
+        } catch (_: Exception) {
             JSONArray()
         }
 
         val alarmManager = context.getSystemService(
-            AlarmManager::class.java
-        )
+            Context.ALARM_SERVICE
+        ) as AlarmManager
 
         for (i in 0 until reminders.length()) {
 
             try {
                 val item = reminders.getJSONObject(i)
 
-                val id = item.getInt("id")
-                val title = item.getString("title")
+                val id = item.optLong("id", 0L)
+                val title = item.optString(
+                    "title",
+                    "Smart Reminder"
+                )
                 val details = item.optString("details", "")
-                val repeat = item.optString("repeat", "none")
-                val savedTime = item.getLong("time")
+                val repeat = item.optString("repeat", "once")
+                val savedTime = item.optLong("time", 0L)
+
+                if (id == 0L || savedTime <= 0L) {
+                    continue
+                }
 
                 val nextTime = calculateNextTime(
                     savedTime,
@@ -60,33 +70,40 @@ class BootReceiver : BroadcastReceiver() {
 
                 val pendingIntent = PendingIntent.getBroadcast(
                     context,
-                    id,
+                    id.toInt(),
                     alarmIntent,
                     PendingIntent.FLAG_UPDATE_CURRENT or
                         PendingIntent.FLAG_IMMUTABLE
                 )
 
-                if (Build.VERSION.SDK_INT < 31 ||
-                    alarmManager.canScheduleExactAlarms()
-                ) {
+                try {
 
-                    alarmManager.setExactAndAllowWhileIdle(
-                        AlarmManager.RTC_WAKEUP,
-                        nextTime,
-                        pendingIntent
-                    )
+                    if (
+                        Build.VERSION.SDK_INT < 31 ||
+                        alarmManager.canScheduleExactAlarms()
+                    ) {
 
-                } else {
+                        alarmManager.setExactAndAllowWhileIdle(
+                            AlarmManager.RTC_WAKEUP,
+                            nextTime,
+                            pendingIntent
+                        )
 
-                    alarmManager.setAndAllowWhileIdle(
-                        AlarmManager.RTC_WAKEUP,
-                        nextTime,
-                        pendingIntent
-                    )
+                    } else {
+
+                        alarmManager.setAndAllowWhileIdle(
+                            AlarmManager.RTC_WAKEUP,
+                            nextTime,
+                            pendingIntent
+                        )
+                    }
+
+                } catch (_: SecurityException) {
+                    // অনুমতি না থাকলে অ্যাপ ক্র্যাশ করবে না।
                 }
 
-            } catch (e: Exception) {
-                e.printStackTrace()
+            } catch (_: Exception) {
+                // একটি রিমাইন্ডারে সমস্যা হলেও অন্যগুলো সেট হবে।
             }
         }
     }
@@ -98,37 +115,38 @@ class BootReceiver : BroadcastReceiver() {
 
         val now = System.currentTimeMillis()
 
-        val calendar = Calendar.getInstance()
-        calendar.timeInMillis = savedTime
-
         if (savedTime > now) {
             return savedTime
         }
 
+        val calendar = Calendar.getInstance().apply {
+            timeInMillis = savedTime
+        }
+
         when (repeat) {
 
-            "none" -> return null
+            "once", "none" -> {
+                return null
+            }
 
             "daily" -> {
-                val days = (
-                    (now - savedTime) / 86400000L
-                ) + 1
 
-                calendar.add(
-                    Calendar.DAY_OF_MONTH,
-                    days.toInt()
-                )
+                while (calendar.timeInMillis <= now) {
+                    calendar.add(
+                        Calendar.DAY_OF_MONTH,
+                        1
+                    )
+                }
             }
 
             "weekly" -> {
-                val weeks = (
-                    (now - savedTime) / 604800000L
-                ) + 1
 
-                calendar.add(
-                    Calendar.WEEK_OF_YEAR,
-                    weeks.toInt()
-                )
+                while (calendar.timeInMillis <= now) {
+                    calendar.add(
+                        Calendar.WEEK_OF_YEAR,
+                        1
+                    )
+                }
             }
 
             "monthly" -> {
@@ -139,25 +157,31 @@ class BootReceiver : BroadcastReceiver() {
 
                 while (calendar.timeInMillis <= now) {
 
-                    calendar.set(Calendar.DAY_OF_MONTH, 1)
+                    calendar.set(
+                        Calendar.DAY_OF_MONTH,
+                        1
+                    )
 
                     calendar.add(
                         Calendar.MONTH,
                         1
                     )
 
-                    val maxDay = calendar.getActualMaximum(
-                        Calendar.DAY_OF_MONTH
-                    )
+                    val maximumDay =
+                        calendar.getActualMaximum(
+                            Calendar.DAY_OF_MONTH
+                        )
 
                     calendar.set(
                         Calendar.DAY_OF_MONTH,
-                        minOf(originalDay, maxDay)
+                        minOf(originalDay, maximumDay)
                     )
                 }
             }
 
-            else -> return null
+            else -> {
+                return null
+            }
         }
 
         return calendar.timeInMillis
