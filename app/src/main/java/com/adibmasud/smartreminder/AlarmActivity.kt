@@ -1,7 +1,6 @@
 package com.adibmasud.smartreminder
 
 import android.app.Activity
-import android.app.KeyguardManager
 import android.content.Context
 import android.content.Intent
 import android.media.Ringtone
@@ -28,11 +27,8 @@ class AlarmActivity : Activity() {
     private var reminderTitle: String = "Smart Reminder"
     private var reminderDetails: String = ""
 
-    private val backgroundColor =
-        Color.rgb(35, 32, 30)
-
-    private val goldColor =
-        Color.rgb(212, 175, 55)
+    private val backgroundColor = Color.rgb(35, 32, 30)
+    private val goldColor = Color.rgb(212, 175, 55)
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -49,15 +45,12 @@ class AlarmActivity : Activity() {
             )
         }
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            window.addFlags(
-                WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON
-            )
-        }
+        window.addFlags(
+            WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON
+        )
 
         reminderId = intent.getLongExtra("id", 0L)
-        reminderTitle = intent.getStringExtra("title")
-            ?: "Smart Reminder"
+        reminderTitle = intent.getStringExtra("title") ?: "Smart Reminder"
         reminderDetails = intent.getStringExtra("details") ?: ""
 
         buildAlarmScreen()
@@ -104,7 +97,6 @@ class AlarmActivity : Activity() {
         root.addView(title)
 
         if (reminderDetails.isNotBlank()) {
-
             val details = TextView(this).apply {
                 text = reminderDetails
                 textSize = 16f
@@ -112,7 +104,6 @@ class AlarmActivity : Activity() {
                 gravity = Gravity.CENTER
                 setPadding(0, 15, 0, 20)
             }
-
             root.addView(details)
         }
 
@@ -181,7 +172,7 @@ class AlarmActivity : Activity() {
 
     private fun createButton(
         text: String,
-        background: Int,
+        buttonBackgroundColor: Int,
         foreground: Int
     ): Button {
 
@@ -191,8 +182,8 @@ class AlarmActivity : Activity() {
             isAllCaps = false
             setTextColor(foreground)
 
-            background = GradientDrawable().apply {
-                setColor(background)
+            this.background = GradientDrawable().apply {
+                setColor(buttonBackgroundColor)
                 cornerRadius = 18f
             }
 
@@ -209,26 +200,19 @@ class AlarmActivity : Activity() {
     }
 
     private fun startAlarmSound() {
-
         try {
-
             val soundUri = RingtoneManager.getDefaultUri(
                 RingtoneManager.TYPE_ALARM
             ) ?: RingtoneManager.getDefaultUri(
                 RingtoneManager.TYPE_NOTIFICATION
             )
 
-            ringtone = RingtoneManager.getRingtone(
-                this,
-                soundUri
-            )
+            ringtone = RingtoneManager.getRingtone(this, soundUri)
 
             ringtone?.let {
-
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
                     it.isLooping = true
                 }
-
                 it.play()
             }
 
@@ -238,28 +222,18 @@ class AlarmActivity : Activity() {
     }
 
     private fun startVibration() {
-
         try {
-
             vibrator = getSystemService(
                 Context.VIBRATOR_SERVICE
             ) as Vibrator
 
-            val pattern = longArrayOf(
-                0, 500, 300, 500, 300
-            )
+            val pattern = longArrayOf(0, 500, 300, 500, 300)
 
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-
                 vibrator?.vibrate(
-                    VibrationEffect.createWaveform(
-                        pattern,
-                        0
-                    )
+                    VibrationEffect.createWaveform(pattern, 0)
                 )
-
             } else {
-
                 @Suppress("DEPRECATION")
                 vibrator?.vibrate(pattern, 0)
             }
